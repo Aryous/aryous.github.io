@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+import TopBar from '../components/TopBar.astro';
+import Footer from '../components/Footer.astro';
+import Contents from '../components/Contents.astro';
+import { t, type Locale } from '../i18n/ui';
+import { getProjectItems } from '../lib/site';
+import { featuredProjects } from '../lib/cover';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const s = t(locale);
+const items = await getProjectItems();
+const featured = featuredProjects(items);
+const ordered = [...featured, ...items.filter((i) => !featured.includes(i))];
+---
+
+<Base locale={locale} title={s.nav.works}>
+  <TopBar locale={locale} variant="inner" section="projects" />
+  <main>
+    <header class="lh">
+      <h1>{s.works.title}<small>{s.works.sub}</small></h1>
+    </header>
+    <Contents locale={locale} projects={ordered} writing={null} showAll={false} />
+  </main>
+  <Footer locale={locale} />
+</Base>
+
+<style>
+  .lh {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 64px var(--gutter) 0;
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: clamp(64px, 10vw, 120px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  h1 small {
+    font-family: var(--f-serif);
+    font-size: 18px;
+    letter-spacing: 0;
+    color: var(--ink-3);
+    margin-left: 14px;
+  }
+  main :global(.contents) {
+    padding-top: 28px;
+  }
+  main :global(.contents h2) {
+    display: none;
+  }
+</style>

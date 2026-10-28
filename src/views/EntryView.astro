@@ -1,0 +1,285 @@
+---
+import { getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import TopBar from '../components/TopBar.astro';
+import Footer from '../components/Footer.astro';
+import PageHead from '../components/PageHead.astro';
+import ReadingProgress from '../components/ReadingProgress.astro';
+import { HTML_LANG, LOCALES, t, type Locale } from '../i18n/ui';
+import { localeHref } from '../i18n/paths';
+import { resolve } from '../lib/entries';
+import { itemHref, type ProjectEntry, type ProjectItem, type WritingEntry, type WritingItem } from '../lib/site';
+import { formatDate, readingMinutes } from '../lib/format';
+import '../styles/prose.css';
+
+type Props =
+  | { locale: Locale; kind: 'writing'; item: WritingItem; all: WritingItem[] }
+  | { locale: Locale; kind: 'projects'; item: ProjectItem; all: ProjectItem[] };
+
+const { locale, kind, item, all } = Astro.props;
+const s = t(locale);
+type AnyEntry = WritingEntry | ProjectEntry;
+const r = resolve<AnyEntry>(item, locale);
+const entry = r.variant.entry;
+const data = entry.data as { title: string; description?: string; summary?: string; coverAlt?: string };
+const shared = item.shared as WritingEntry['data'] & ProjectEntry['data'];
+const { Content } = await render(entry);
+const contentLang = HTML_LANG[r.variant.lang];
+const date = new Date(shared.date as Date);
+const dek = kind === 'writing' ? data.description : data.summary;
+const og = shared.cover ? await getImage({ src: shared.cover, width: 1200, format: 'jpg' }) : null;
+
+const list = all as Array<WritingItem | ProjectItem>;
+const at = list.findIndex((i) => i.slug === item.slug);
+const titleOf = (i: WritingItem | ProjectItem) => resolve<AnyEntry>(i, locale).variant.entry.data.title;
+const newer = at > 0 ? list[at - 1] : null;
+const older = at >= 0 && at < list.length - 1 ? list[at + 1] : null;
+const kind_ = kind === 'writing' ? s.kind.writing : s.kind.project;
+const kicker = locale === 'zh' ? `${kind_} · ${kind === 'writing' ? s.essays.sub : s.works.sub}` : kind_;
+const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/');
+---
+
+<Base locale={locale} title={data.title} description={dek} image={og?.src}>
+  <TopBar locale={locale} variant="inner" section={kind} />
+  <ReadingProgress />
+  <PageHead kicker={kicker} title={data.title} dek={dek} cover={shared.cover} coverAlt={data.coverAlt} lang={contentLang} />
+  {
+    r.fallback && (
+      <p class="notice" role="note">
+        <span>{s.fallback[r.variant.lang]}</span>
+      </p>
+    )
+  }
+  <div class="body">
+    <aside class="meta">
+      {
+        kind === 'writing' ? (
+          <>
+            <p>{formatDate(date, locale, 'dot')}</p>
+            <p>{s.minutes(readingMinutes(entry.body ?? ''))}</p>
+          </>
+        ) : (
+          <>
+            <p>
+              <span class="k">{s.project.year}</span>
+              {date.getFullYear()}
+            </p>
+            {shared.status && (
+              <p>
+                <span class="k">{s.project.status}</span>
+                {s.status[shared.status]}
+              </p>
+            )}
+            {shared.links?.repo && (
+              <p>
+                <a href={shared.links.repo} rel="noopener">{s.project.repo} ↗</a>
+              </p>
+            )}
+            {shared.links?.demo && (
+              <p>
+                <a href={shared.links.demo} rel="noopener">{s.project.demo} ↗</a>
+              </p>
+            )}
+          </>
+        )
+      }
+      <div class="langs">
+        {
+          LOCALES.map((l) => {
+            const has = !!item.translations[l];
+            const here = has && l === r.variant.lang;
+            const href = itemHref(kind, item.slug, l);
+            return has && !here ? (
+              <a class="lg" href={href} hreflang={HTML_LANG[l]}>
+                <i class="on" />
+                {s.langName[l]}
+              </a>
+            ) : (
+              <span class:list={['lg', { off: !has }]}>
+                <i class:list={{ on: has }} />
+                {s.langName[l]}
+                {!has && ` ${s.notYet}`}
+              </span>
+            );
+          })
+        }
+      </div>
+    </aside>
+    <article class:list={['prose', { dropcap: kind === 'writing' }]} lang={contentLang} data-progress-target>
+      <Content />
+    </article>
+  </div>
+  <nav class="pn" aria-label={s.toc}>
+    <div class="cell">
+      {
+        older && (
+          <a href={itemHref(kind, older.slug, locale)}>
+            <small>← {s.prev}</small>
+            <b>{titleOf(older)}</b>
+          </a>
+        )
+      }
+    </div>
+    <a class="back" href={back}>{s.backToContents}</a>
+    <div class="cell right">
+      {
+        newer && (
+          <a href={itemHref(kind, newer.slug, locale)}>
+            <small>{s.next} →</small>
+            <b>{titleOf(newer)}</b>
+          </a>
+        )
+      }
+    </div>
+  </nav>
+  <Footer locale={locale} />
+</Base>
+
+<style>
+  .notice {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px var(--gutter);
+    padding-left: max(var(--gutter), calc((100% - 1100px) / 2 + 214px));
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .notice span {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    background: var(--bg-2);
+  }
+  .body {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 640px) 1fr;
+    gap: 44px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px var(--gutter) 72px;
+  }
+  .meta {
+    position: sticky;
+    top: 28px;
+    align-self: start;
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    line-height: 1.9;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+  }
+  .meta p {
+    margin: 0;
+  }
+  .meta .k {
+    display: inline-block;
+    min-width: 4.5em;
+    color: var(--ink-3);
+    opacity: 0.8;
+  }
+  .meta a {
+    color: var(--link);
+  }
+  .langs {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: var(--f-sans);
+    font-size: 12px;
+  }
+  .lg {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-2);
+  }
+  a.lg:hover {
+    color: var(--link);
+  }
+  .lg.off {
+    opacity: 0.55;
+  }
+  .lg i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1px solid var(--ink-3);
+  }
+  .lg i.on {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .pn {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px var(--gutter) 56px;
+    border-top: 1px solid var(--rule);
+  }
+  .pn small {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .pn b {
+    font-family: var(--f-serif);
+    font-size: 18px;
+  }
+  .pn a:hover b {
+    color: var(--link);
+  }
+  .right {
+    text-align: right;
+  }
+  .back {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--link);
+  }
+  @media (max-width: 900px) {
+    .body {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding-top: 28px;
+    }
+    .meta {
+      position: static;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .langs {
+      margin: 0;
+      flex-direction: row;
+      gap: 14px;
+    }
+    .notice {
+      padding-left: var(--gutter);
+    }
+    .pn {
+      grid-template-columns: 1fr 1fr;
+    }
+    .back {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      text-align: center;
+    }
+  }
+  @media (max-width: 600px) {
+    .prose {
+      font-size: 17px;
+    }
+  }
+</style>

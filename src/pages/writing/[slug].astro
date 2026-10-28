@@ -1,0 +1,12 @@
+---
+import EntryView from '../../views/EntryView.astro';
+import { getWritingItems } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const all = await getWritingItems();
+  return all.map((item) => ({ params: { slug: item.slug }, props: { item, all } }));
+}
+const { item, all } = Astro.props;
+---
+
+<EntryView locale="zh" kind="writing" item={item} all={all} />

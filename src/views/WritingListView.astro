@@ -1,0 +1,173 @@
+---
+import Base from '../layouts/Base.astro';
+import TopBar from '../components/TopBar.astro';
+import Footer from '../components/Footer.astro';
+import { HTML_LANG, t, type Locale } from '../i18n/ui';
+import { resolve } from '../lib/entries';
+import { getWritingItems, itemHref } from '../lib/site';
+import { formatDate, readingMinutes } from '../lib/format';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const s = t(locale);
+const items = await getWritingItems();
+const years = new Map<number, typeof rows>();
+const rows = items.map((w) => {
+  const r = resolve(w, locale);
+  const d = new Date(w.shared.date as Date);
+  return {
+    year: d.getFullYear(),
+    href: itemHref('writing', w.slug, locale),
+    date: formatDate(d, locale, 'dot').slice(5),
+    title: r.variant.entry.data.title,
+    description: r.variant.entry.data.description,
+    minutes: s.minutes(readingMinutes(r.variant.entry.body ?? '')),
+    lang: r.fallback ? (r.variant.lang === 'zh' ? '中文' : 'EN') : null,
+    contentLang: HTML_LANG[r.variant.lang],
+  };
+});
+for (const row of rows) years.set(row.year, [...(years.get(row.year) ?? []), row]);
+---
+
+<Base locale={locale} title={s.nav.writing}>
+  <TopBar locale={locale} variant="inner" section="writing" />
+  <main class="list">
+    <header class="lh">
+      <h1>{s.essays.title}<small>{s.essays.sub}</small></h1>
+    </header>
+    {rows.length === 0 && <p class="empty">{s.writingEmpty}</p>}
+    {
+      [...years].map(([year, list]) => (
+        <section class="year">
+          <h2>{year}</h2>
+          <div>
+            {list.map((row) => (
+              <a class="row" href={row.href}>
+                <span class="d">{row.date}</span>
+                <span class="t" lang={row.contentLang}>
+                  {row.title}
+                  {row.description && <small>{row.description}</small>}
+                </span>
+                <span class="m">
+                  {row.lang && <em>{row.lang}</em>}
+                  {row.minutes}
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </main>
+  <Footer locale={locale} />
+</Base>
+
+<style>
+  .list {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 var(--gutter) 80px;
+    min-height: 60vh;
+  }
+  .lh {
+    padding: 64px 0 36px;
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: clamp(64px, 10vw, 120px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+  h1 small {
+    font-family: var(--f-serif);
+    font-size: 18px;
+    letter-spacing: 0;
+    color: var(--ink-3);
+    margin-left: 14px;
+  }
+  .empty {
+    margin: 0;
+    padding: 22px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--f-serif);
+    font-size: 20px;
+    color: var(--ink-2);
+  }
+  .year {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 44px;
+    padding: 28px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .year h2 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: 44px;
+    line-height: 1;
+    color: var(--ink-3);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 18px;
+    align-items: baseline;
+    padding: 14px 0;
+  }
+  .row + .row {
+    border-top: 1px solid var(--rule);
+  }
+  .d {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .t {
+    font-family: var(--f-serif);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+    transition: color 0.3s;
+  }
+  .t small {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--f-sans);
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--ink-2);
+  }
+  .row:hover .t {
+    color: var(--link);
+  }
+  .m {
+    font-size: 12px;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+  .m em {
+    font-style: normal;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    margin-right: 10px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+  }
+  @media (max-width: 720px) {
+    .year {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+</style>
