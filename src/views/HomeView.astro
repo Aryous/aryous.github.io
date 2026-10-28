@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import Cover from '../components/Cover.astro';
+import Contents from '../components/Contents.astro';
+import Footer from '../components/Footer.astro';
+import type { Locale } from '../i18n/ui';
+import { getProjectItems, getWritingItems } from '../lib/site';
+import { featuredProjects, pickCover } from '../lib/cover';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const projects = await getProjectItems();
+const writing = await getWritingItems();
+const cover = pickCover(projects, writing);
+---
+
+<Base locale={locale}>
+  <Cover locale={locale} hero={cover.hero} backdrops={cover.backdrops} lines={cover.lines} />
+  <main>
+    <Contents locale={locale} projects={featuredProjects(projects)} writing={writing.slice(0, 5)} />
+  </main>
+  <Footer locale={locale} />
+</Base>

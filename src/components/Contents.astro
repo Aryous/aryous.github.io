@@ -1,0 +1,261 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { t, type Locale } from '../i18n/ui';
+import { resolve } from '../lib/entries';
+import { itemHref, type ProjectItem, type WritingItem } from '../lib/site';
+import { formatDate, readingMinutes } from '../lib/format';
+import { localeHref } from '../i18n/paths';
+
+interface Props {
+  locale: Locale;
+  projects: ProjectItem[];
+  /** Pass null to render only the Works column (projects index page). */
+  writing: WritingItem[] | null;
+  /** Show "all works / all writing" links (home page). */
+  showAll?: boolean;
+}
+const { locale, projects, writing, showAll = true } = Astro.props;
+const s = t(locale);
+
+const works = await Promise.all(
+  projects.map(async (p, i) => {
+    const r = resolve(p, locale);
+    const peek = p.shared.cover ? await getImage({ src: p.shared.cover, width: 560, format: 'webp' }) : null;
+    return {
+      n: String(i + 1).padStart(2, '0'),
+      href: itemHref('projects', p.slug, locale),
+      title: r.variant.entry.data.title,
+      summary: r.variant.entry.data.summary,
+      year: new Date(p.shared.date as Date).getFullYear(),
+      peek: peek?.src,
+      cover: p.shared.cover,
+      lang: r.fallback ? r.variant.lang : null,
+    };
+  }),
+);
+const essays = (writing ?? []).map((w) => {
+  const r = resolve(w, locale);
+  return {
+    href: itemHref('writing', w.slug, locale),
+    title: r.variant.entry.data.title,
+    date: formatDate(new Date(w.shared.date as Date), locale, 'dot'),
+    minutes: s.minutes(readingMinutes(r.variant.entry.body ?? '')),
+    lang: r.fallback ? (r.variant.lang === 'zh' ? '中' : 'EN') : null,
+  };
+});
+---
+
+<section class:list={['contents', { single: writing === null }]} data-peek-zone>
+  <div class="col">
+    <h2>{s.works.title}<small>{s.works.sub}</small></h2>
+    {
+      works.map((w) => (
+        <a class="it" href={w.href} data-peek={w.peek}>
+          {w.cover && <Image class="thumb" src={w.cover} alt="" width={160} format="webp" loading="lazy" />}
+          <span class="n">{w.n}</span>
+          <span class="t">
+            {w.title}
+            <small>{w.summary}</small>
+          </span>
+          <span class="y">{w.year}</span>
+        </a>
+      ))
+    }
+    {showAll && <a class="all" href={localeHref(locale, '/projects/')}>{s.works.all} →</a>}
+  </div>
+  {
+    writing !== null && (
+      <div class="col">
+        <h2>{s.essays.title}<small>{s.essays.sub}</small></h2>
+        {essays.length === 0 && <p class="empty">{s.writingEmpty}</p>}
+        {essays.map((e) => (
+          <a class="it" href={e.href}>
+            <span class="n arrow">→</span>
+            <span class="t">
+              {e.title}
+              <small>
+                {e.date} · {e.minutes}
+              </small>
+            </span>
+            <span class="y">{e.lang ?? ''}</span>
+          </a>
+        ))}
+        {showAll && essays.length > 0 && <a class="all" href={localeHref(locale, '/writing/')}>{s.essays.all} →</a>}
+      </div>
+    )
+  }
+  <div class="peek" aria-hidden="true"></div>
+</section>
+
+<style>
+  .contents {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 72px var(--gutter) 80px;
+  }
+  .contents.single {
+    grid-template-columns: 1fr;
+    max-width: 860px;
+  }
+  h2 {
+    margin: 0 0 18px;
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: 46px;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  h2 small {
+    font-family: var(--f-serif);
+    font-size: 16px;
+    color: var(--ink-3);
+    margin-left: 10px;
+  }
+  .it {
+    display: grid;
+    grid-template-columns: 54px 1fr auto;
+    align-items: baseline;
+    gap: 14px;
+    padding: 16px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .it:last-of-type {
+    border-bottom: 1px solid var(--rule);
+  }
+  .n {
+    font-family: var(--f-display);
+    font-size: 30px;
+    line-height: 1;
+    color: var(--ink-3);
+    transition: color 0.3s;
+  }
+  .arrow {
+    font-family: var(--f-sans);
+    font-size: 18px;
+  }
+  .t {
+    font-family: var(--f-serif);
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.35;
+    transition: transform 0.4s var(--ease);
+  }
+  .t small {
+    display: block;
+    font-family: var(--f-sans);
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--ink-2);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+  .y {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .it:hover .n {
+    color: var(--accent);
+  }
+  .it:hover .t {
+    transform: translateX(8px);
+  }
+  .it :global(.thumb) {
+    display: none;
+  }
+  .all {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--link);
+  }
+  .empty {
+    margin: 0;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--f-serif);
+    font-size: 18px;
+    color: var(--ink-2);
+  }
+  .peek {
+    position: absolute;
+    z-index: 40;
+    left: 0;
+    top: 0;
+    width: 280px;
+    aspect-ratio: 16 / 11;
+    border-radius: 8px;
+    pointer-events: none;
+    background: var(--bg-2) center / cover no-repeat;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: scale(0.9) rotate(-3deg);
+    transition: opacity 0.3s, transform 0.4s var(--ease);
+  }
+  .peek.on {
+    opacity: 1;
+    transform: scale(1) rotate(-3deg);
+  }
+  @media (max-width: 860px) {
+    .contents {
+      grid-template-columns: 1fr;
+      gap: 48px;
+      padding-top: 52px;
+    }
+  }
+  @media (hover: none), (max-width: 720px) {
+    .peek {
+      display: none;
+    }
+    .it {
+      grid-template-columns: 72px 1fr auto;
+    }
+    .it :global(.thumb) {
+      display: block;
+      grid-row: 1;
+      grid-column: 1;
+      width: 72px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 4px;
+      align-self: center;
+    }
+    .it:has(:global(.thumb)) .n {
+      display: none;
+    }
+    h2 {
+      font-size: 38px;
+    }
+    .t {
+      font-size: 19px;
+    }
+  }
+</style>
+
+<script>
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll<HTMLElement>('[data-peek-zone]').forEach((zone) => {
+      const peek = zone.querySelector<HTMLElement>('.peek');
+      if (!peek) return;
+      zone.querySelectorAll<HTMLElement>('[data-peek]').forEach((el) => {
+        el.addEventListener('mouseenter', () => {
+          peek.style.backgroundImage = `url(${el.dataset.peek})`;
+          peek.classList.add('on');
+        });
+        el.addEventListener('mouseleave', () => peek.classList.remove('on'));
+      });
+      zone.addEventListener('mousemove', (e) => {
+        const r = zone.getBoundingClientRect();
+        peek.style.left = `${e.clientX - r.left + 24}px`;
+        peek.style.top = `${e.clientY - r.top - 100}px`;
+      });
+    });
+  }
+</script>

@@ -45,7 +45,26 @@ try {
         page.on('requestfailed', (r) => errors.push(`request failed: ${r.url()}`));
         const res = await page.goto(base + path, { waitUntil: 'networkidle0' });
         await page.evaluate(() => document.fonts.ready);
-        await new Promise((r) => setTimeout(r, 1800));
+        // Trigger lazy images, then wait until every image is loaded and decoded.
+        await page.evaluate(async () => {
+          window.scrollTo(0, document.body.scrollHeight);
+          await new Promise((r) => setTimeout(r, 300));
+          window.scrollTo(0, 0);
+          // Only images that are actually rendered; hidden lazy thumbnails never load.
+          const visible = [...document.images].filter((img) => img.getClientRects().length > 0);
+          const settle = Promise.all(
+            visible.map((img) =>
+              img.complete
+                ? img.decode().catch(() => {})
+                : new Promise((r) => {
+                    img.addEventListener('load', r, { once: true });
+                    img.addEventListener('error', r, { once: true });
+                  }),
+            ),
+          );
+          await Promise.race([settle, new Promise((r) => setTimeout(r, 8000))]);
+        });
+        await new Promise((r) => setTimeout(r, 1500));
         const info = await page.evaluate(() => ({
           theme: document.documentElement.dataset.theme,
           overflow: document.documentElement.scrollWidth - window.innerWidth,

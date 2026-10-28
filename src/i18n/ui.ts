@@ -40,7 +40,7 @@ export const ui = {
     switchToLabel: '阅读中文版',
     theme: { toLight: 'Switch to light', toDark: 'Switch to dark' },
     issue: (n: number, season: { zh: string; en: string }, year: number) => `Issue ${pad(n)} · ${season.en} ${year}`,
-    intro: { lines: ["I'm Lucas.", 'This is where I keep what I make,'], lead: 'and', accent: 'what I figure out', tail: '.' },
+    intro: { lines: ["I'm Lucas.", 'Things I make,'], lead: 'and', accent: 'what I figure out', tail: '.' },
     inThisIssue: 'In this issue',
     sticker: 'MAKE · WRITE · 做东西 · 写下来 · ',
     kind: { project: 'Project', writing: 'Essay' },

@@ -1,0 +1,386 @@
+---
+import { Image, getImage } from 'astro:assets';
+import TopBar from './TopBar.astro';
+import { t, type Locale } from '../i18n/ui';
+import { resolve } from '../lib/entries';
+import { itemHref, type ProjectItem, type WritingItem } from '../lib/site';
+import type { CoverLine } from '../lib/cover';
+import { formatDate } from '../lib/format';
+import { issueFor } from '../lib/issue';
+import type { ProjectEntry, WritingEntry } from '../lib/site';
+
+interface Props {
+  locale: Locale;
+  hero: ProjectItem;
+  backdrops: ProjectItem[];
+  lines: CoverLine<ProjectEntry, WritingEntry>[];
+}
+const { locale, hero, backdrops, lines } = Astro.props;
+const s = t(locale);
+const issue = issueFor(new Date());
+const object = hero.shared.object!;
+const mask = await getImage({ src: object, width: 800, format: 'webp' });
+const heroTitle = resolve(hero, locale).variant.entry.data.title;
+
+const coverLines = lines.map((line) => {
+  const item = line.item as ProjectItem | WritingItem;
+  const data = resolve(item as ProjectItem, locale).variant.entry.data as { title: string };
+  return {
+    href: itemHref(line.kind === 'project' ? 'projects' : 'writing', item.slug, locale),
+    title: data.title,
+    sub: `${s.kind[line.kind]} · ${formatDate(new Date(item.shared.date as Date), locale, 'month')}`,
+  };
+});
+---
+
+<section class="cover" data-stage>
+  <div class="light" aria-hidden="true"></div>
+  <TopBar locale={locale} variant="cover" />
+
+  <div class="scene">
+    <h1 class="par mast" data-d="8">Aryous</h1>
+    {
+      backdrops.map((b, i) => (
+        <a class:list={['par', 'bd', `bd${i + 1}`]} data-d={18 + i * 4} href={itemHref('projects', b.slug, locale)} tabindex="-1" aria-hidden="true">
+          <Image src={b.shared.cover!} alt="" widths={[360, 720]} sizes="(max-width: 720px) 46vw, 21vw" format="webp" loading="eager" />
+        </a>
+      ))
+    }
+    <a class="par hero" data-d="34" href={itemHref('projects', hero.slug, locale)} aria-label={heroTitle}>
+      <span class="hero-in" style={`--obj: url(${mask.src})`}>
+        <Image src={object} alt={heroTitle} widths={[400, 800]} sizes="(max-width: 720px) 60vw, 26vw" format="webp" loading="eager" fetchpriority="high" />
+        <span class="sh" aria-hidden="true"></span>
+      </span>
+    </a>
+    <div class="stk" aria-hidden="true">
+      <svg viewBox="0 0 120 120">
+        <defs><path id="stk-path" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"></path></defs>
+        <circle cx="60" cy="60" r="58" fill="#ff5b3a"></circle>
+        <text font-size="10.5" letter-spacing="3" fill="#13110f" font-weight="600"><textPath href="#stk-path">{s.sticker}</textPath></text>
+      </svg>
+      <span>{String(issue.number).padStart(2, '0')}</span>
+    </div>
+  </div>
+
+  <div class="lines">
+    <span class="tag">{s.inThisIssue}</span>
+    {
+      coverLines.map((l) => (
+        <a class="cl" href={l.href}>
+          <b>{l.title}</b>
+          <i>{l.sub}</i>
+        </a>
+      ))
+    }
+  </div>
+
+  <div class="intro">
+    <p class="say">
+      {s.intro.lines.map((line) => (<>{line}<br /></>))}
+      {s.intro.lead}{locale === 'en' ? ' ' : ''}<em>{s.intro.accent}</em>{s.intro.tail}
+    </p>
+    <p class="who">Lucas · 王立奇</p>
+  </div>
+
+  <div class="vig" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+</section>
+
+<style>
+  .cover {
+    --mast: clamp(120px, 19vw, 300px);
+    --hero-w: clamp(240px, 25vw, 380px);
+    --bd-w: clamp(180px, 19vw, 300px);
+    --hero-top: calc(64px + var(--mast) * 0.62);
+    position: relative;
+    height: clamp(640px, 100vh, 860px);
+    background: var(--cover-bg);
+    color: var(--cover-ink);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .light {
+    position: absolute;
+    inset: -20%;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 34% 44% at 50% 56%, rgba(255, 120, 80, 0.18), transparent 65%),
+      radial-gradient(ellipse 50% 40% at 50% 0%, rgba(255, 240, 220, 0.08), transparent 70%);
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate(-3%, -2%) scale(1); }
+    to { transform: translate(3%, 2%) scale(1.08); }
+  }
+  .scene {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .par {
+    position: absolute;
+    transition: transform 0.5s var(--ease);
+    will-change: transform;
+  }
+  .mast {
+    left: 0;
+    right: 0;
+    top: 50px;
+    margin: 0;
+    text-align: center;
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: var(--mast);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #efe8dc;
+    z-index: 2;
+  }
+  .bd {
+    z-index: 4;
+    width: var(--bd-w);
+    display: block;
+  }
+  .bd :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    filter: brightness(0.62) saturate(0.85) blur(0.6px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
+    transition: filter 0.6s;
+  }
+  .bd1 {
+    left: calc(50% - var(--hero-w) * 0.5 - var(--bd-w) * 0.8);
+    top: calc(var(--hero-top) + 46px);
+  }
+  .bd1 :global(img) {
+    transform: rotate(-11deg);
+  }
+  .bd2 {
+    left: calc(50% + var(--hero-w) * 0.5 - var(--bd-w) * 0.2);
+    top: calc(var(--hero-top) + 26px);
+  }
+  .bd2 :global(img) {
+    transform: rotate(8deg);
+  }
+  .hero {
+    z-index: 6;
+    left: calc(50% - var(--hero-w) / 2);
+    top: var(--hero-top);
+    width: var(--hero-w);
+  }
+  .hero-in {
+    position: relative;
+    display: block;
+    animation: sway 9s ease-in-out infinite;
+    filter: drop-shadow(0 50px 50px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 70px rgba(255, 120, 80, 0.15));
+  }
+  .hero-in :global(img) {
+    width: 100%;
+    height: auto;
+  }
+  .sh {
+    position: absolute;
+    inset: 0;
+    -webkit-mask: var(--obj) center / 100% 100% no-repeat;
+    mask: var(--obj) center / 100% 100% no-repeat;
+    background: linear-gradient(105deg, transparent 40%, rgba(255, 250, 235, 0.55) 50%, transparent 60%);
+    background-size: 250% 100%;
+    mix-blend-mode: overlay;
+    animation: shine 6s ease-in-out infinite;
+  }
+  @keyframes sway {
+    0%, 100% { transform: perspective(900px) rotateY(-16deg) rotateZ(-3deg) translateY(0); }
+    50% { transform: perspective(900px) rotateY(14deg) rotateZ(2deg) translateY(-14px); }
+  }
+  @keyframes shine {
+    0%, 55% { background-position: 160% 0; }
+    100% { background-position: -60% 0; }
+  }
+  .stk {
+    position: absolute;
+    z-index: 7;
+    width: 112px;
+    height: 112px;
+    left: calc(50% + var(--hero-w) * 0.5 + var(--bd-w) * 0.5);
+    top: calc(var(--hero-top) + var(--bd-w) * 0.5);
+  }
+  .stk svg {
+    width: 100%;
+    height: 100%;
+    animation: spin 22s linear infinite;
+  }
+  .stk text {
+    font-family: var(--f-sans);
+  }
+  .stk span {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 28px;
+    color: #13110f;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .lines {
+    position: absolute;
+    z-index: 30;
+    left: var(--gutter);
+    bottom: 40px;
+    width: 300px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .cl {
+    display: block;
+    padding: 10px 0;
+    border-top: 1px solid rgba(241, 236, 228, 0.14);
+    transition: transform 0.4s var(--ease);
+  }
+  .cl:hover {
+    transform: translateX(6px);
+  }
+  .cl b {
+    display: block;
+    font-family: var(--f-serif);
+    font-size: 19px;
+    font-weight: 700;
+    color: #f4efe7;
+    line-height: 1.4;
+  }
+  .cl:hover b {
+    color: var(--accent);
+  }
+  .cl i {
+    font-family: var(--f-display);
+    font-size: 16px;
+    color: rgba(241, 236, 228, 0.55);
+  }
+  .intro {
+    position: absolute;
+    z-index: 30;
+    right: var(--gutter);
+    bottom: 40px;
+    width: 380px;
+    text-align: right;
+  }
+  .say {
+    font-family: var(--f-serif);
+    font-size: clamp(22px, 1.9vw, 27px);
+    line-height: 1.45;
+    margin: 0 0 10px;
+    font-weight: 700;
+  }
+  .say em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .who {
+    margin: 0;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    color: rgba(241, 236, 228, 0.5);
+  }
+  .vig {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    pointer-events: none;
+    background: radial-gradient(ellipse 90% 80% at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
+  }
+  .grain {
+    z-index: 20;
+  }
+
+  @media (max-width: 720px) {
+    .cover {
+      --mast: 25vw;
+      --hero-w: 56vw;
+      --bd-w: 44vw;
+      --hero-top: calc(18px + var(--mast) * 0.66);
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 36px;
+    }
+    .scene {
+      position: relative;
+      height: calc(var(--hero-top) + var(--hero-w) * 1.12 + 24px);
+    }
+    .mast {
+      top: 14px;
+    }
+    .bd1 {
+      left: 3vw;
+      top: calc(var(--hero-top) + 18vw);
+    }
+    .bd2 {
+      display: none;
+    }
+    .stk {
+      width: 76px;
+      height: 76px;
+      left: auto;
+      right: 5vw;
+      top: calc(var(--hero-top) + 6vw);
+    }
+    .stk span {
+      font-size: 20px;
+    }
+    .lines,
+    .intro {
+      position: relative;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      width: auto;
+      margin: 0 var(--gutter);
+      text-align: left;
+    }
+    .scene {
+      order: 1;
+    }
+    .intro {
+      order: 2;
+      margin-top: 8px;
+      margin-bottom: 26px;
+    }
+    .lines {
+      order: 3;
+    }
+    .vig {
+      background: radial-gradient(ellipse 120% 70% at 50% 35%, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
+    }
+  }
+</style>
+
+<script>
+  const fine = window.matchMedia('(pointer: fine)').matches;
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (fine && !still) {
+    document.querySelectorAll<HTMLElement>('[data-stage]').forEach((stage) => {
+      const layers = stage.querySelectorAll<HTMLElement>('.par');
+      stage.addEventListener('mousemove', (e) => {
+        const r = stage.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        layers.forEach((el) => {
+          const d = Number(el.dataset.d || 0);
+          el.style.transform = `translate(${-x * d}px, ${-y * d}px)`;
+        });
+      });
+      stage.addEventListener('mouseleave', () => layers.forEach((el) => (el.style.transform = '')));
+    });
+  }
+</script>
