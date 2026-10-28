@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;width:1600px;height:1000px;background:#13110f;}
+  body{font-family:"JetBrains Mono","SF Mono",Menlo,monospace;color:#e9e3d9;display:flex;align-items:center;justify-content:center;
+    background: radial-gradient(ellipse 60% 70% at 70% 30%, rgba(255,91,58,.16), transparent 70%), #13110f;}
+  .win{width:1340px;border-radius:22px;background:#1c1916;border:1px solid rgba(255,255,255,.08);box-shadow:0 60px 120px rgba(0,0,0,.6);overflow:hidden}
+  .bar{height:56px;display:flex;align-items:center;gap:12px;padding:0 26px;background:#24201c;border-bottom:1px solid rgba(255,255,255,.06)}
+  .bar i{width:14px;height:14px;border-radius:50%;background:#3a342e}
+  .bar span{margin-left:auto;color:rgba(233,227,217,.45);font-size:20px;letter-spacing:.08em}
+  pre{margin:0;padding:44px 52px 52px;font-size:27px;line-height:1.8;white-space:pre}
+  .p{color:#ff5b3a}.c{color:rgba(233,227,217,.42)}.k{color:#f1d27c}
+</style></head>
+<body>
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>canvapie · Canva.cn CLI</span></div>
+<pre><span class="c"># 链接、ID 或标题关键词都能认出设计</span>
+<span class="p">$</span> canvapie resolve <span class="k">"&lt;title-keyword&gt;"</span> --json
+<span class="p">$</span> canvapie pages <span class="k">&lt;design-id&gt;</span> --json
+
+<span class="c"># 导出 PPTX，并检查隐藏页</span>
+<span class="p">$</span> canvapie export <span class="k">"&lt;title-keyword&gt;"</span> --format pptx --inspect --json
+<span class="p">$</span> canvapie inspect <span class="k">exports/&lt;design-id&gt;.pptx</span> --json</pre>
+</div>
+</body></html>

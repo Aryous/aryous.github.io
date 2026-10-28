@@ -1,6 +1,14 @@
 ---
+import { getProjectItems, getWritingItems } from '../lib/site';
+import { pickCover } from '../lib/cover';
+const projects = await getProjectItems();
+const writing = await getWritingItems();
+const cover = pickCover(projects, writing);
 ---
 <html lang="zh-CN">
   <head><meta charset="utf-8" /><title>Aryous</title></head>
-  <body><h1>Aryous</h1></body>
+  <body>
+    <h1>Aryous</h1>
+    <p id="count">{projects.length} projects, {writing.length} essays, hero {cover.hero.slug}, backdrops {cover.backdrops.map((b) => b.slug).join(',')}</p>
+  </body>
 </html>
