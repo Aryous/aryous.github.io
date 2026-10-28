@@ -1,0 +1,50 @@
+---
+import { t, type Locale } from '../i18n/ui';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const s = t(locale);
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap row">
+    <a class="mark" href={locale === 'zh' ? '/' : '/en/'}>Aryous</a>
+    <span class="meta">© {year} Lucas · {s.footer.built}</span>
+    <span class="links">
+      <a href={locale === 'zh' ? '/rss.xml' : '/en/rss.xml'}>{s.footer.rss}</a>
+      <a href="https://github.com/Aryous" rel="me">GitHub</a>
+    </span>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--rule);
+    padding: 28px 0 40px;
+    color: var(--ink-3);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+  .row {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .mark {
+    font-family: var(--f-display);
+    font-size: 22px;
+    color: var(--ink);
+    letter-spacing: 0;
+  }
+  .links {
+    margin-left: auto;
+    display: flex;
+    gap: 20px;
+  }
+  .links a:hover {
+    color: var(--link);
+  }
+</style>

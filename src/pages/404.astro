@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+import TopBar from '../components/TopBar.astro';
+import { ui } from '../i18n/ui';
+---
+
+<Base locale="zh" title="404" alternates={false}>
+  <TopBar locale="zh" variant="inner" altHref="/en/" />
+  <main class="nf">
+    <p class="code">404</p>
+    <h1>{ui.zh.notFound.title}<span lang="en">{ui.en.notFound.title}</span></h1>
+    <p class="body">{ui.zh.notFound.body}<br /><span lang="en">{ui.en.notFound.body}</span></p>
+    <p class="links"><a href="/">{ui.zh.notFound.home} →</a><a href="/en/" lang="en">{ui.en.notFound.home} →</a></p>
+  </main>
+</Base>
+
+<style>
+  .nf {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px var(--gutter);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .code {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: clamp(120px, 22vw, 240px);
+    line-height: 0.9;
+    margin: 0;
+    color: var(--accent);
+  }
+  h1 {
+    font-family: var(--f-serif);
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 40px);
+    margin: 20px 0 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  h1 span {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-style: italic;
+    color: var(--ink-2);
+  }
+  .body {
+    color: var(--ink-2);
+    line-height: 1.8;
+  }
+  .links {
+    display: flex;
+    gap: 28px;
+    color: var(--link);
+  }
+</style>

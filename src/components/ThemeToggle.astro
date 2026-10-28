@@ -1,0 +1,68 @@
+---
+import { t, type Locale } from '../i18n/ui';
+interface Props {
+  locale: Locale;
+}
+const s = t(Astro.props.locale);
+---
+
+<button class="theme-toggle" type="button" data-to-light={s.theme.toLight} data-to-dark={s.theme.toDark} aria-label={s.theme.toDark} title={s.theme.toDark}>
+  <svg class="i-moon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+  <svg class="i-sun" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+</button>
+
+<style>
+  .theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    opacity: 0.75;
+    transition: opacity 0.2s, transform 0.4s var(--ease);
+  }
+  .theme-toggle:hover {
+    opacity: 1;
+    transform: rotate(-20deg);
+  }
+  .theme-toggle svg {
+    grid-area: 1 / 1;
+  }
+  :global(:root[data-theme='dark']) .i-moon,
+  :global(:root:not([data-theme='dark'])) .i-sun {
+    display: none;
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const sync = (btn: HTMLElement) => {
+    const label = root.dataset.theme === 'dark' ? btn.dataset.toLight : btn.dataset.toDark;
+    if (label) {
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+    }
+  };
+  document.querySelectorAll<HTMLElement>('.theme-toggle').forEach((btn) => {
+    sync(btn);
+    btn.addEventListener('click', () => {
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {}
+      document.querySelectorAll<HTMLElement>('.theme-toggle').forEach(sync);
+    });
+  });
+  // Follow the system until the reader picks a theme.
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    let stored = null;
+    try {
+      stored = localStorage.getItem('theme');
+    } catch {}
+    if (stored) return;
+    root.dataset.theme = e.matches ? 'dark' : 'light';
+    document.querySelectorAll<HTMLElement>('.theme-toggle').forEach(sync);
+  });
+</script>

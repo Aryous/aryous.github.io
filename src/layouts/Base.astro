@@ -1,0 +1,80 @@
+---
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource/instrument-serif/400-italic.css';
+import '@fontsource-variable/inter';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/noto-serif-sc/400.css';
+import '@fontsource/noto-serif-sc/500.css';
+import '@fontsource/noto-serif-sc/700.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import { HTML_LANG, t, type Locale } from '../i18n/ui';
+import { switchLocaleHref } from '../i18n/paths';
+
+interface Props {
+  locale: Locale;
+  title?: string;
+  description?: string;
+  /** Absolute or root-relative URL of a social preview image. */
+  image?: string;
+  /** Set false on pages without a counterpart in the other language (404). */
+  alternates?: boolean;
+}
+const { locale, title, description, image, alternates = true } = Astro.props;
+const s = t(locale);
+const site = Astro.site ?? new URL('https://aryous.github.io');
+const pathname = Astro.url.pathname;
+const fullTitle = title ? `${title} · Aryous` : 'Aryous';
+const desc = description ?? s.siteDescription;
+const canonical = new URL(pathname, site).href;
+const zhHref = new URL(switchLocaleHref(pathname, 'zh'), site).href;
+const enHref = new URL(switchLocaleHref(pathname, 'en'), site).href;
+const rss = locale === 'zh' ? '/rss.xml' : '/en/rss.xml';
+---
+
+<!doctype html>
+<html lang={HTML_LANG[locale]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    {
+      alternates && (
+        <>
+          <link rel="alternate" hreflang="zh-CN" href={zhHref} />
+          <link rel="alternate" hreflang="en" href={enHref} />
+          <link rel="alternate" hreflang="x-default" href={zhHref} />
+        </>
+      )
+    }
+    <link rel="alternate" type="application/rss+xml" title="Aryous" href={rss} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#13110f" />
+    <meta name="generator" content={Astro.generator} />
+    <meta property="og:site_name" content="Aryous" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    {image && <meta property="og:image" content={new URL(image, site).href} />}
+    <script is:inline>
+      (function () {
+        var theme = null;
+        try {
+          theme = localStorage.getItem('theme');
+        } catch (e) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

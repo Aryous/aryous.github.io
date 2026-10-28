@@ -1,0 +1,116 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { t, type Locale } from '../i18n/ui';
+import { localeHref, switchLocaleHref } from '../i18n/paths';
+import { issueFor } from '../lib/issue';
+
+interface Props {
+  locale: Locale;
+  /** 'cover' sits on the dark cover; 'inner' is the dark running head of inner pages. */
+  variant: 'cover' | 'inner';
+  section?: 'writing' | 'projects';
+  /** Override the language-switch target (pages with no counterpart, e.g. 404). */
+  altHref?: string;
+}
+const { locale, variant, section, altHref } = Astro.props;
+const s = t(locale);
+const issue = issueFor(new Date());
+const other: Locale = locale === 'zh' ? 'en' : 'zh';
+const switchHref = altHref ?? switchLocaleHref(Astro.url.pathname, other);
+---
+
+<header class:list={['topbar', variant]}>
+  <div class="left">
+    <a class="mark" href={localeHref(locale, '/')}>Aryous</a>
+    <span class="issue">{s.issue(issue.number, issue.season, issue.year)}</span>
+  </div>
+  <nav class="right" aria-label={s.toc}>
+    <a href={localeHref(locale, '/writing/')} aria-current={section === 'writing' ? 'page' : undefined}>{s.nav.writing}</a>
+    <a href={localeHref(locale, '/projects/')} aria-current={section === 'projects' ? 'page' : undefined}>{s.nav.works}</a>
+    <a class="lang" href={switchHref} hreflang={other === 'zh' ? 'zh-CN' : 'en'} lang={other === 'zh' ? 'zh-CN' : 'en'} aria-label={s.switchToLabel}>
+      {locale === 'zh' ? (<><b>中</b><span> / EN</span></>) : (<><span>中 / </span><b>EN</b></>)}
+    </a>
+    <ThemeToggle locale={locale} />
+  </nav>
+</header>
+
+<style>
+  .topbar {
+    position: relative;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px var(--gutter);
+    font-family: var(--f-sans);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(241, 236, 228, 0.62);
+  }
+  .inner {
+    background: var(--cover-bg);
+    border-bottom: 1px solid rgba(241, 236, 228, 0.1);
+  }
+  .cover {
+    margin: 0 var(--gutter);
+    padding: 22px 0 12px;
+    border-bottom: 1px solid rgba(241, 236, 228, 0.14);
+  }
+  .left {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    min-width: 0;
+  }
+  .mark {
+    font-family: var(--f-display);
+    font-size: 22px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--cover-ink);
+  }
+  .cover .mark {
+    display: none;
+  }
+  .issue {
+    white-space: nowrap;
+  }
+  .right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .right a {
+    transition: color 0.2s;
+  }
+  .right a:hover,
+  .right a[aria-current='page'] {
+    color: var(--cover-ink);
+  }
+  .right a[aria-current='page'] {
+    box-shadow: 0 1px 0 var(--accent);
+  }
+  .lang b {
+    color: var(--cover-ink);
+    font-weight: 500;
+  }
+  .right :global(.theme-toggle) {
+    color: var(--cover-ink);
+  }
+  @media (max-width: 640px) {
+    .topbar {
+      letter-spacing: 0.12em;
+    }
+    .right {
+      gap: 14px;
+    }
+    .inner .issue {
+      display: none;
+    }
+    .cover .issue {
+      font-size: 10px;
+    }
+  }
+</style>

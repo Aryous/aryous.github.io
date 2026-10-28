@@ -1,0 +1,59 @@
+:root {
+  --accent: #ff5b3a;
+  --cover-bg: #13110f;
+  --cover-ink: #f1ece4;
+  --f-display: 'Instrument Serif', 'Noto Serif SC', Georgia, serif;
+  --f-serif: 'Noto Serif SC', 'Songti SC', 'STSong', serif;
+  --f-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  --f-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --gutter: clamp(16px, 4vw, 44px);
+}
+
+/* Light = the paper inside the magazine. */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f3eee6;
+  --bg-2: #ebe4d8;
+  --ink: #1d1a17;
+  --ink-2: #5d564c;
+  --ink-3: #8a8071;
+  --rule: #ddd3c4;
+  --link: #d9411f;
+  --body: #2a2622;
+  --body-weight: 400;
+  --shadow: 0 30px 60px -30px rgba(40, 30, 20, 0.45);
+}
+
+/* Dark = the cover's graphite carried through. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #13110f;
+  --bg-2: #1b1815;
+  --ink: #f1ece4;
+  --ink-2: rgba(233, 227, 217, 0.68);
+  --ink-3: rgba(233, 227, 217, 0.45);
+  --rule: rgba(241, 236, 228, 0.12);
+  --link: #ff7a5c;
+  --body: rgba(233, 227, 217, 0.88);
+  --body-weight: 500;
+  --shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.7);
+}
+
+/* No JS: follow the system. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg: #13110f;
+    --bg-2: #1b1815;
+    --ink: #f1ece4;
+    --ink-2: rgba(233, 227, 217, 0.68);
+    --ink-3: rgba(233, 227, 217, 0.45);
+    --rule: rgba(241, 236, 228, 0.12);
+    --link: #ff7a5c;
+    --body: rgba(233, 227, 217, 0.88);
+    --body-weight: 500;
+    --shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.7);
+  }
+}
