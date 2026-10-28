@@ -1,0 +1,137 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  .ap { --serif-en:"Instrument Serif", Didot, Georgia, serif; --serif-zh:"Songti SC","Noto Serif SC",STSong,serif; --sans:"Inter",-apple-system,"PingFang SC",sans-serif; --zh-sans:-apple-system,"PingFang SC","Noto Sans SC",sans-serif; --mono:"JetBrains Mono","SF Mono",Menlo,monospace; --red:#ff5b3a; text-align:left; }
+  .ap * { box-sizing:border-box; }
+  .ap-note { background:var(--bg-secondary); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--text-secondary); margin-bottom:18px; line-height:1.6; }
+  .run { background:#13110f; color:rgba(241,236,228,.6); display:flex; justify-content:space-between; align-items:center; padding:14px 40px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; font-family:var(--sans); }
+  .run .m { font-family:var(--serif-en); font-size:22px; letter-spacing:0; text-transform:none; color:#f1ece4; margin-right:14px; }
+  .run b { color:#f1ece4; font-weight:500; }
+  .prog { height:2px; background:rgba(255,91,58,.15); } .prog i { display:block; height:100%; width:34%; background:var(--red); animation: prog 6s ease-in-out infinite alternate; }
+  @keyframes prog { from { width:12%; } to { width:46%; } }
+  .grid { display:grid; grid-template-columns: 170px minmax(0,620px) 210px; gap:44px; justify-content:center; padding:0 40px; }
+  .kick { font-family:var(--sans); font-size:11px; letter-spacing:.2em; color:var(--red); text-transform:uppercase; }
+  .ttl { font-family:var(--serif-zh); font-weight:700; font-size:50px; line-height:1.2; margin:14px 0 14px; letter-spacing:.01em; }
+  .dek { font-family:var(--serif-zh); font-size:19px; line-height:1.7; margin:0; }
+  .meta { font-family:var(--mono); font-size:11px; line-height:2; letter-spacing:.04em; padding-top:6px; }
+  .chips { margin-top:14px; display:flex; flex-direction:column; gap:6px; font-family:var(--sans); font-size:12px; }
+  .chips span { display:inline-flex; align-items:center; gap:8px; }
+  .chips i { width:7px; height:7px; border-radius:50%; display:inline-block; }
+  .body p { margin:0 0 1.15em; }
+  .dc::first-letter { float:left; font-family:var(--serif-zh); font-weight:700; font-size:3.3em; line-height:1; margin:.06em .14em 0 0; color:var(--red); }
+  .h { font-family:var(--serif-zh); font-weight:700; font-size:24px; margin:1.6em 0 .7em; display:flex; align-items:baseline; gap:14px; }
+  .h em { font-family:var(--serif-en); font-style:italic; font-weight:400; font-size:30px; color:var(--red); }
+  .pq { font-family:var(--serif-zh); font-weight:700; font-size:28px; line-height:1.5; margin:1.3em 0; padding:6px 0 6px 22px; border-left:3px solid var(--red); }
+  .fn { color:var(--red); font-family:var(--serif-en); font-size:.85em; vertical-align:super; }
+  .side { font-family:var(--sans); font-size:12.5px; line-height:1.7; }
+  .side b { color:var(--red); font-family:var(--serif-en); font-weight:400; font-size:16px; margin-right:4px; }
+  figure { margin:1.6em 0; } figure img { width:100%; display:block; border-radius:4px; animation: fadein 1.6s ease both; }
+  @keyframes fadein { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  figcaption { font-family:var(--mono); font-size:11px; margin-top:10px; letter-spacing:.04em; }
+
+  /* A 纸本内页 */
+  .pa { background:#f3eee6; color:#1d1a17; border-radius:12px; overflow:hidden; font-family:var(--serif-zh); }
+  .pa .hd { padding:56px 0 40px; border-bottom:1px solid #ddd3c4; margin-bottom:40px; }
+  .pa .dek { color:#5d564c; } .pa .meta { color:#8a8071; } .pa .chips { color:#5d564c; }
+  .pa .body { font-family:var(--serif-zh); font-size:18px; line-height:1.95; color:#2a2622; }
+  .pa .side { color:#7a7064; } .pa figcaption { color:#8a8071; }
+  .pa .pq { color:#1d1a17; }
+  .pa .wrap { padding-bottom:48px; }
+
+  /* B 暗场题图 */
+  .pb { background:#13110f; color:#e9e3d9; border-radius:12px; overflow:hidden; }
+  .pb .hero { position:relative; height:400px; overflow:hidden; }
+  .pb .hero img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 40%; filter: brightness(.5) saturate(.75); transform: scale(1.06); animation: kb 22s ease-in-out infinite alternate; }
+  @keyframes kb { from { transform: scale(1.06) translate(0,0); } to { transform: scale(1.14) translate(-2%,-2%); } }
+  .pb .hero::after { content:""; position:absolute; inset:0; background: linear-gradient(180deg, rgba(19,17,15,.82) 0, rgba(19,17,15,.3) 32%, rgba(19,17,15,.45) 62%, #13110f 100%); }
+  .pb .hero .in { position:absolute; z-index:2; left:0; right:0; bottom:34px; }
+  .pb .ttl { color:#f6f1e9; }
+  .pb .dek { color:rgba(233,227,217,.7); }
+  .pb .meta { color:rgba(233,227,217,.45); } .pb .chips { color:rgba(233,227,217,.65); }
+  .pb .body { font-family:var(--zh-sans); font-size:17px; line-height:1.95; color:rgba(233,227,217,.86); }
+  .pb .h, .pb .pq { color:#f6f1e9; }
+  .pb .side { color:rgba(233,227,217,.5); } .pb figcaption { color:rgba(233,227,217,.45); }
+  .pb .wrap { padding:36px 0 48px; }
+  .pb .grain { position:absolute; inset:-50%; pointer-events:none; opacity:.08; mix-blend-mode:overlay; z-index:3; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  @media (prefers-reduced-motion: reduce) { .ap * { animation:none !important; } }
+</style>
+
+<div class="ap">
+<h2>文章页长什么样？</h2>
+<p class="subtitle">首页是封面，文章页就是杂志的内页。两版的结构相同：左栏放日期、语言版本这些信息，中间是正文，右栏放旁注。区别在内页的"纸"和题图。<b>正文是我写的示例</b>，只用来看排版。</p>
+<div class="ap-note">文章页刻意保持安静：只有顶部的朱红阅读进度条和图片淡入，读的时候不会有东西在动。</div>
+
+<div class="cards" style="grid-template-columns:1fr;">
+
+<!-- A -->
+<div class="card" data-choice="article-paper" onclick="toggleSelect(this)">
+<div class="card-image" style="aspect-ratio:auto;display:block;background:#000;padding:0;">
+<div class="pa">
+  <div class="run"><span style="display:flex;align-items:baseline"><span class="m">Aryous</span>Issue 01 · 文字</span><span style="display:flex;gap:26px"><span>文字</span><span>作品</span><span><b>中</b> / EN</span></span></div>
+  <div class="prog"><i></i></div>
+  <div class="wrap">
+    <div class="grid hd">
+      <div class="meta">2026.10.12<br>约 8 分钟<div class="chips"><span><i style="background:#ff5b3a"></i>中文</span><span style="opacity:.55"><i style="border:1px solid #8a8071"></i>English 暂无</span></div></div>
+      <div><div class="kick">Essay · 文字</div><div class="ttl">Vibe Coding 不是写代码</div><p class="dek">一个非工程师和 AI 一起做了十几个项目之后，想明白的几件事。</p></div>
+      <div></div>
+    </div>
+    <div class="grid">
+      <div></div>
+      <div class="body">
+        <p class="dc">我不是科班出身的工程师。过去一年，我和 AI 一起做了十几个小项目：有的是给自己用的命令行工具，有的是完整的网页应用。做得越多，我越确定一件事：Vibe Coding 最难的部分，不是写代码。</p>
+        <div class="h"><em>01</em>先有判断，再有代码</div>
+        <p>AI 可以在几分钟内写出几百行代码，但它不会替你决定这个东西该不该做、做到什么程度算完。这些判断如果一开始没想清楚，后面每一轮修改都只是在原地打转。</p>
+        <div class="pq">代码越来越便宜，判断越来越贵。</div>
+        <p>所以我后来养成了一个习惯：动手之前，先用一段话写下"做完是什么样子"<span class="fn">1</span>。这段话往往比代码更难写，也更值钱。</p>
+        <figure><img src="assets/pc-guilin.png" alt=""><figcaption>图 1 · Maposter 生成的桂林明信片</figcaption></figure>
+      </div>
+      <div class="side" style="padding-top:368px"><b>1</b>这个习惯后来被我整理成一套流程，叫 HarnessPractice。</div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="card-body">
+  <h3>A · 纸本内页</h3>
+  <p>封面是深色光面纸，翻进去是暖白的纸：顶部保留一条和封面同色的深色页眉。正文用宋体，首字下沉，引文配朱红竖线，旁注放在右栏。读长文最舒服，"杂志"的比喻也最完整。</p>
+</div>
+</div>
+
+<!-- B -->
+<div class="card" data-choice="article-dark" onclick="toggleSelect(this)">
+<div class="card-image" style="aspect-ratio:auto;display:block;background:#000;padding:0;">
+<div class="pb">
+  <div class="run" style="background:transparent;position:relative;z-index:5;margin-bottom:-46px"><span style="display:flex;align-items:baseline"><span class="m">Aryous</span>Issue 01 · 文字</span><span style="display:flex;gap:26px"><span>文字</span><span>作品</span><span><b>中</b> / EN</span></span></div>
+  <div class="hero">
+    <img src="assets/pc-guilin.png" alt="">
+    <div class="grain"></div>
+    <div class="in"><div class="grid">
+      <div class="meta">2026.10.12<br>约 8 分钟<div class="chips"><span><i style="background:#ff5b3a"></i>中文</span><span style="opacity:.55"><i style="border:1px solid rgba(233,227,217,.5)"></i>English 暂无</span></div></div>
+      <div><div class="kick">Essay · 文字</div><div class="ttl">Vibe Coding 不是写代码</div><p class="dek">一个非工程师和 AI 一起做了十几个项目之后，想明白的几件事。</p></div>
+      <div></div>
+    </div></div>
+  </div>
+  <div class="prog"><i></i></div>
+  <div class="wrap">
+    <div class="grid">
+      <div></div>
+      <div class="body">
+        <p class="dc">我不是科班出身的工程师。过去一年，我和 AI 一起做了十几个小项目：有的是给自己用的命令行工具，有的是完整的网页应用。做得越多，我越确定一件事：Vibe Coding 最难的部分，不是写代码。</p>
+        <div class="h"><em>01</em>先有判断，再有代码</div>
+        <p>AI 可以在几分钟内写出几百行代码，但它不会替你决定这个东西该不该做、做到什么程度算完。这些判断如果一开始没想清楚，后面每一轮修改都只是在原地打转。</p>
+        <div class="pq">代码越来越便宜，判断越来越贵。</div>
+        <p>所以我后来养成了一个习惯：动手之前，先用一段话写下"做完是什么样子"<span class="fn">1</span>。这段话往往比代码更难写，也更值钱。</p>
+      </div>
+      <div class="side" style="padding-top:470px"><b>1</b>这个习惯后来被我整理成一套流程，叫 HarnessPractice。</div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="card-body">
+  <h3>B · 暗场题图</h3>
+  <p>全站延续封面的深色。每篇文章顶部有一张电影感题图，暗化后缓慢推近，标题压在图上；正文用黑体，浅字深底。氛围最统一，但长文读久了更累，而且每篇都需要一张题图（没有题图时退回纯色页头）。</p>
+</div>
+</div>
+
+</div>
+</div>
