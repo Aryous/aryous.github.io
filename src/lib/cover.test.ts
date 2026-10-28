@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildItems } from './entries';
-import { pickCover, featuredProjects } from './cover';
+import { pickCover, featuredProjects, type CoverFields } from './cover';
 
-const p = (slug: string, data: Record<string, unknown>) => ({ id: `${slug}/zh`, data: { title: slug, summary: '', ...data } });
+const p = (slug: string, data: CoverFields & { date?: Date }) => ({ id: `${slug}/zh`, data: { title: slug, summary: '', ...data } });
 const w = (slug: string, date: string) => ({ id: `${slug}/zh`, data: { title: slug, date: new Date(date) } });
 
 const projects = () =>
