@@ -10,6 +10,12 @@
   --gutter: clamp(16px, 4vw, 44px);
 }
 
+/* English text uses Source Serif 4 (Noto Serif SC's sibling). CJK fonts draw
+   curly quotes full-width, which leaves a gap in "it's". */
+:lang(en) {
+  --f-serif: 'Source Serif 4 Variable', 'Noto Serif SC', Georgia, serif;
+}
+
 /* Light = the paper inside the magazine. */
 :root,
 :root[data-theme='light'] {

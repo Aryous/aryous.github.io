@@ -92,6 +92,9 @@ const switchHref = altHref ?? switchLocaleHref(Astro.url.pathname, other);
   .right a[aria-current='page'] {
     box-shadow: 0 1px 0 var(--accent);
   }
+  .lang {
+    white-space: nowrap;
+  }
   .lang b {
     color: var(--cover-ink);
     font-weight: 500;
@@ -106,11 +109,8 @@ const switchHref = altHref ?? switchLocaleHref(Astro.url.pathname, other);
     .right {
       gap: 14px;
     }
-    .inner .issue {
+    .issue {
       display: none;
-    }
-    .cover .issue {
-      font-size: 10px;
     }
   }
 </style>
