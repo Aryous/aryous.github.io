@@ -20,18 +20,22 @@ interface Props {
   description?: string;
   /** Absolute or root-relative URL of a social preview image. */
   image?: string;
-  /** Set false on pages without a counterpart in the other language (404). */
-  alternates?: boolean;
+  /** Language versions that exist, as site paths. false = none (404). Default: both, by URL. */
+  alternates?: Partial<Record<Locale, string>> | false;
+  /** Canonical site path. false = omit (404). Default: this page. */
+  canonical?: string | false;
 }
-const { locale, title, description, image, alternates = true } = Astro.props;
+const { locale, title, description, image, alternates, canonical: canonicalPath } = Astro.props;
 const s = t(locale);
 const site = Astro.site ?? new URL('https://aryous.github.io');
 const pathname = Astro.url.pathname;
 const fullTitle = title ? `${title} · Aryous` : 'Aryous';
 const desc = description ?? s.siteDescription;
-const canonical = new URL(pathname, site).href;
-const zhHref = new URL(switchLocaleHref(pathname, 'zh'), site).href;
-const enHref = new URL(switchLocaleHref(pathname, 'en'), site).href;
+const canonical = canonicalPath === false ? null : new URL(canonicalPath ?? pathname, site).href;
+const alts =
+  alternates === false ? {} : (alternates ?? { zh: switchLocaleHref(pathname, 'zh'), en: switchLocaleHref(pathname, 'en') });
+const altLinks = (Object.entries(alts) as [Locale, string][]).map(([l, p]) => ({ lang: HTML_LANG[l], href: new URL(p, site).href }));
+const xDefault = alts.zh ?? alts.en;
 const rss = locale === 'zh' ? '/rss.xml' : '/en/rss.xml';
 ---
 
@@ -42,16 +46,9 @@ const rss = locale === 'zh' ? '/rss.xml' : '/en/rss.xml';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={desc} />
-    <link rel="canonical" href={canonical} />
-    {
-      alternates && (
-        <>
-          <link rel="alternate" hreflang="zh-CN" href={zhHref} />
-          <link rel="alternate" hreflang="en" href={enHref} />
-          <link rel="alternate" hreflang="x-default" href={zhHref} />
-        </>
-      )
-    }
+    {canonical && <link rel="canonical" href={canonical} />}
+    {altLinks.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+    {xDefault && <link rel="alternate" hreflang="x-default" href={new URL(xDefault, site).href} />}
     <link rel="alternate" type="application/rss+xml" title="Aryous" href={rss} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#13110f" />
@@ -59,7 +56,7 @@ const rss = locale === 'zh' ? '/rss.xml' : '/en/rss.xml';
     <meta property="og:site_name" content="Aryous" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={desc} />
-    <meta property="og:url" content={canonical} />
+    {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:type" content="website" />
     {image && <meta property="og:image" content={new URL(image, site).href} />}
     <script is:inline>

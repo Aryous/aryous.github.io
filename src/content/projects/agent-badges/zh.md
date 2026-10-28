@@ -5,7 +5,7 @@ date: 2026-10-19
 status: active
 links:
   repo: https://github.com/Aryous/agent-badges
-  demo: https://aryous.github.io/agent-badges/
+  demo: https://aryous.github.io/agent-badges/demo/
 cover: ./cover.jpg
 object: ./object.png
 featured: true

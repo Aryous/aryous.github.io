@@ -43,10 +43,10 @@ const { kicker, title, dek, cover, coverAlt = '', lang } = Astro.props;
   .in {
     position: relative;
     z-index: 3;
-    max-width: 1100px;
+    max-width: 1240px;
     margin: 0 auto;
     padding: 0 var(--gutter);
-    padding-left: max(var(--gutter), calc((100% - 1100px) / 2 + 214px));
+    padding-left: calc(var(--gutter) + 214px);
   }
   .plain {
     padding: 64px 0 44px;
@@ -80,6 +80,7 @@ const { kicker, title, dek, cover, coverAlt = '', lang } = Astro.props;
   }
   .film .grain {
     z-index: 2;
+    animation: none;
   }
   @keyframes kb {
     from { transform: scale(1.06); }
@@ -91,7 +92,13 @@ const { kicker, title, dek, cover, coverAlt = '', lang } = Astro.props;
     font-size: 11px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
+    color: var(--link);
+  }
+  .film .kick {
     color: var(--accent);
+  }
+  .film :global(:focus-visible) {
+    outline-color: var(--accent);
   }
   h1 {
     margin: 0;

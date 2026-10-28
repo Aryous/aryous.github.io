@@ -38,9 +38,12 @@ const older = at >= 0 && at < list.length - 1 ? list[at + 1] : null;
 const kind_ = kind === 'writing' ? s.kind.writing : s.kind.project;
 const kicker = locale === 'zh' ? `${kind_} · ${kind === 'writing' ? s.essays.sub : s.works.sub}` : kind_;
 const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/');
+// Only languages that exist get hreflang; a fallback page points canonical at the original.
+const alternates = Object.fromEntries(LOCALES.filter((l) => item.translations[l]).map((l) => [l, itemHref(kind, item.slug, l)]));
+const canonical = r.fallback ? itemHref(kind, item.slug, r.variant.lang) : undefined;
 ---
 
-<Base locale={locale} title={data.title} description={dek} image={og?.src}>
+<Base locale={locale} title={data.title} description={dek} image={og?.src} alternates={alternates} canonical={canonical}>
   <TopBar locale={locale} variant="inner" section={kind} />
   <ReadingProgress />
   <PageHead kicker={kicker} title={data.title} dek={dek} cover={shared.cover} coverAlt={data.coverAlt} lang={contentLang} />
@@ -109,6 +112,7 @@ const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/')
     <article class:list={['prose', { dropcap: kind === 'writing' }]} lang={contentLang} data-progress-target>
       <Content />
     </article>
+    <aside class="side" data-sidenotes aria-hidden="true"></aside>
   </div>
   <nav class="pn" aria-label={s.toc}>
     <div class="cell">
@@ -136,12 +140,50 @@ const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/')
   <Footer locale={locale} />
 </Base>
 
+<script>
+  // Footnotes become margin notes when the right column is wide enough.
+  const side = document.querySelector<HTMLElement>('[data-sidenotes]');
+  const article = document.querySelector<HTMLElement>('[data-progress-target]');
+  const list = article?.querySelector<HTMLElement>('section.footnotes');
+  if (side && article && list) {
+    const layout = () => {
+      side.replaceChildren();
+      list.classList.remove('in-margin');
+      if (side.clientWidth < 180) return;
+      const origin = side.getBoundingClientRect().top;
+      let next = 0;
+      article.querySelectorAll<HTMLAnchorElement>('a[data-footnote-ref]').forEach((ref) => {
+        const target = document.getElementById(decodeURIComponent(ref.hash.slice(1)));
+        if (!target) return;
+        const note = document.createElement('div');
+        note.className = 'sn';
+        const num = document.createElement('b');
+        num.textContent = ref.textContent ?? '';
+        note.append(num, ...Array.from(target.cloneNode(true).childNodes));
+        note.querySelectorAll('[data-footnote-backref]').forEach((a) => a.remove());
+        note.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+        side.append(note);
+        const top = Math.max(ref.getBoundingClientRect().top - origin - 4, next);
+        note.style.top = `${top}px`;
+        next = top + note.offsetHeight + 14;
+      });
+      if (side.childElementCount > 0) list.classList.add('in-margin');
+    };
+    document.fonts.ready.then(layout);
+    let t: number | undefined;
+    window.addEventListener('resize', () => {
+      clearTimeout(t);
+      t = window.setTimeout(layout, 150);
+    });
+  }
+</script>
+
 <style>
   .notice {
-    max-width: 1100px;
+    max-width: 1240px;
     margin: 0 auto;
     padding: 14px var(--gutter);
-    padding-left: max(var(--gutter), calc((100% - 1100px) / 2 + 214px));
+    padding-left: calc(var(--gutter) + 214px);
     font-size: 13px;
     color: var(--ink-2);
   }
@@ -155,9 +197,9 @@ const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/')
   }
   .body {
     display: grid;
-    grid-template-columns: 170px minmax(0, 640px) 1fr;
+    grid-template-columns: 170px minmax(0, 640px) minmax(0, 1fr);
     gap: 44px;
-    max-width: 1100px;
+    max-width: 1240px;
     margin: 0 auto;
     padding: 48px var(--gutter) 72px;
   }
@@ -178,7 +220,6 @@ const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/')
     display: inline-block;
     min-width: 4.5em;
     color: var(--ink-3);
-    opacity: 0.8;
   }
   .meta a {
     color: var(--link);
@@ -201,7 +242,10 @@ const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/')
     color: var(--link);
   }
   .lg.off {
-    opacity: 0.55;
+    color: var(--ink-3);
+  }
+  .lg.off i {
+    border-style: dashed;
   }
   .lg i {
     width: 7px;
@@ -213,12 +257,49 @@ const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/')
     background: var(--accent);
     border-color: var(--accent);
   }
+  .side {
+    position: relative;
+  }
+  .side :global(.sn) {
+    position: absolute;
+    left: 0;
+    right: 0;
+    font-family: var(--f-sans);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink-2);
+  }
+  .side :global(.sn p) {
+    margin: 0;
+  }
+  .side :global(.sn a) {
+    color: var(--link);
+  }
+  .side :global(.sn b) {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: 16px;
+    color: var(--accent);
+    margin-right: 6px;
+  }
+  /* When notes sit in the margin, the end-of-article list stays for screen readers only. */
+  .body :global(.prose section.footnotes.in-margin) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
   .pn {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 24px;
-    max-width: 1100px;
+    max-width: 1240px;
     margin: 0 auto;
     padding: 28px var(--gutter) 56px;
     border-top: 1px solid var(--rule);
@@ -251,6 +332,9 @@ const back = localeHref(locale, kind === 'writing' ? '/writing/' : '/projects/')
       grid-template-columns: 1fr;
       gap: 24px;
       padding-top: 28px;
+    }
+    .side {
+      display: none;
     }
     .meta {
       position: static;

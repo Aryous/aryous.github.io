@@ -22,7 +22,7 @@ const switchHref = altHref ?? switchLocaleHref(Astro.url.pathname, other);
 <header class:list={['topbar', variant]}>
   <div class="left">
     <a class="mark" href={localeHref(locale, '/')}>Aryous</a>
-    <span class="issue">{s.issue(issue.number, issue.season, issue.year)}</span>
+    <span class="issue"><span class="long">{s.issue(issue.number, issue.season, issue.year)}</span><span class="short">{s.issueShort(issue.number, issue.season)}</span></span>
   </div>
   <nav class="right" aria-label={s.toc}>
     <a href={localeHref(locale, '/writing/')} aria-current={section === 'writing' ? 'page' : undefined}>{s.nav.writing}</a>
@@ -77,6 +77,12 @@ const switchHref = altHref ?? switchLocaleHref(Astro.url.pathname, other);
   .issue {
     white-space: nowrap;
   }
+  .short {
+    display: none;
+  }
+  .topbar :focus-visible {
+    outline-color: var(--accent);
+  }
   .right {
     display: flex;
     align-items: center;
@@ -109,8 +115,15 @@ const switchHref = altHref ?? switchLocaleHref(Astro.url.pathname, other);
     .right {
       gap: 14px;
     }
-    .issue {
+    .inner .issue,
+    .long {
       display: none;
+    }
+    .short {
+      display: inline;
+    }
+    .right a {
+      padding: 12px 0;
     }
   }
 </style>

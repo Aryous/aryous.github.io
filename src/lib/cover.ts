@@ -20,9 +20,12 @@ export type CoverLine<P extends RawEntry, W extends RawEntry> =
   | { kind: 'writing'; item: Item<W> };
 
 export function pickCover<P extends ProjectLike, W extends RawEntry>(projects: Item<P>[], writing: Item<W>[]) {
-  const hero = projects.filter((p) => p.shared.onCover).sort((a, b) => dateOf(b) - dateOf(a))[0];
+  const onCover = projects.filter((p) => p.shared.onCover).sort((a, b) => dateOf(b) - dateOf(a));
+  for (const p of onCover) {
+    if (!p.shared.object) throw new Error(`[projects/${p.slug}] 上封面的项目必须有 object（透明底物件图）`);
+  }
+  const hero = onCover[0];
   if (!hero) throw new Error('[cover] 至少要有一个项目设置 onCover: true');
-  if (!hero.shared.object) throw new Error(`[projects/${hero.slug}] 上封面的项目必须有 object（透明底物件图）`);
   const featured = featuredProjects(projects);
   const backdrops = featured.filter((p) => p !== hero && p.shared.cover).slice(0, 2);
   const pool: Array<{ line: CoverLine<P, W>; t: number }> = [

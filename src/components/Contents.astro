@@ -1,6 +1,6 @@
 ---
 import { Image, getImage } from 'astro:assets';
-import { t, type Locale } from '../i18n/ui';
+import { HTML_LANG, t, type Locale } from '../i18n/ui';
 import { resolve } from '../lib/entries';
 import { itemHref, type ProjectItem, type WritingItem } from '../lib/site';
 import { formatDate, readingMinutes } from '../lib/format';
@@ -29,7 +29,7 @@ const works = await Promise.all(
       year: new Date(p.shared.date as Date).getFullYear(),
       peek: peek?.src,
       cover: p.shared.cover,
-      lang: r.fallback ? r.variant.lang : null,
+      lang: r.fallback ? HTML_LANG[r.variant.lang] : undefined,
     };
   }),
 );
@@ -40,7 +40,8 @@ const essays = (writing ?? []).map((w) => {
     title: r.variant.entry.data.title,
     date: formatDate(new Date(w.shared.date as Date), locale, 'dot'),
     minutes: s.minutes(readingMinutes(r.variant.entry.body ?? '')),
-    lang: r.fallback ? (r.variant.lang === 'zh' ? '中' : 'EN') : null,
+    tag: r.fallback ? (r.variant.lang === 'zh' ? '中文' : 'EN') : null,
+    lang: r.fallback ? HTML_LANG[r.variant.lang] : undefined,
   };
 });
 ---
@@ -53,7 +54,7 @@ const essays = (writing ?? []).map((w) => {
         <a class="it" href={w.href} data-peek={w.peek}>
           {w.cover && <Image class="thumb" src={w.cover} alt="" width={160} format="webp" loading="lazy" />}
           <span class="n">{w.n}</span>
-          <span class="t">
+          <span class="t" lang={w.lang}>
             {w.title}
             <small>{w.summary}</small>
           </span>
@@ -71,13 +72,13 @@ const essays = (writing ?? []).map((w) => {
         {essays.map((e) => (
           <a class="it" href={e.href}>
             <span class="n arrow">→</span>
-            <span class="t">
+            <span class="t" lang={e.lang}>
               {e.title}
               <small>
                 {e.date} · {e.minutes}
               </small>
             </span>
-            <span class="y">{e.lang ?? ''}</span>
+            <span class="y">{e.tag ?? ''}</span>
           </a>
         ))}
         {showAll && essays.length > 0 && <a class="all" href={localeHref(locale, '/writing/')}>{s.essays.all} →</a>}

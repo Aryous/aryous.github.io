@@ -1,7 +1,7 @@
 ---
 import { Image, getImage } from 'astro:assets';
 import TopBar from './TopBar.astro';
-import { t, type Locale } from '../i18n/ui';
+import { HTML_LANG, t, type Locale } from '../i18n/ui';
 import { resolve } from '../lib/entries';
 import { itemHref, type ProjectItem, type WritingItem } from '../lib/site';
 import type { CoverLine } from '../lib/cover';
@@ -24,8 +24,10 @@ const heroTitle = resolve(hero, locale).variant.entry.data.title;
 
 const coverLines = lines.map((line) => {
   const item = line.item as ProjectItem | WritingItem;
-  const data = resolve(item as ProjectItem, locale).variant.entry.data as { title: string };
+  const r = resolve(item as ProjectItem, locale);
+  const data = r.variant.entry.data as { title: string };
   return {
+    lang: r.fallback ? HTML_LANG[r.variant.lang] : undefined,
     href: itemHref(line.kind === 'project' ? 'projects' : 'writing', item.slug, locale),
     title: data.title,
     sub: `${s.kind[line.kind]} · ${formatDate(new Date(item.shared.date as Date), locale, 'month')}`,
@@ -38,7 +40,7 @@ const coverLines = lines.map((line) => {
   <TopBar locale={locale} variant="cover" />
 
   <div class="scene">
-    <h1 class="par mast" data-d="8">Aryous</h1>
+    <h1 class="par mast" data-d="8"><span class="rise">Aryous</span></h1>
     {
       backdrops.map((b, i) => (
         <a class:list={['par', 'bd', `bd${i + 1}`]} data-d={18 + i * 4} href={itemHref('projects', b.slug, locale)} tabindex="-1" aria-hidden="true">
@@ -67,7 +69,7 @@ const coverLines = lines.map((line) => {
     {
       coverLines.map((l) => (
         <a class="cl" href={l.href}>
-          <b>{l.title}</b>
+          <b lang={l.lang}>{l.title}</b>
           <i>{l.sub}</i>
         </a>
       ))
@@ -93,7 +95,7 @@ const coverLines = lines.map((line) => {
     --bd-w: clamp(180px, 19vw, 300px);
     --hero-top: calc(64px + var(--mast) * 0.62);
     position: relative;
-    height: clamp(640px, 100vh, 860px);
+    height: clamp(680px, 100vh, 860px);
     background: var(--cover-bg);
     color: var(--cover-ink);
     overflow: hidden;
@@ -135,6 +137,28 @@ const coverLines = lines.map((line) => {
     letter-spacing: -0.02em;
     color: #efe8dc;
     z-index: 2;
+  }
+  .rise {
+    display: inline-block;
+    animation: rise 1.3s var(--ease) both;
+  }
+  .lines,
+  .intro {
+    animation: rise-soft 1.2s var(--ease) 0.35s both;
+  }
+  .intro {
+    animation-delay: 0.55s;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14%); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes rise-soft {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  .cover :global(:focus-visible) {
+    outline-color: var(--accent);
   }
   .bd {
     z-index: 4;
@@ -231,7 +255,7 @@ const coverLines = lines.map((line) => {
     z-index: 30;
     left: var(--gutter);
     bottom: 40px;
-    width: 300px;
+    width: min(300px, 30vw);
   }
   .tag {
     display: inline-block;
@@ -305,10 +329,10 @@ const coverLines = lines.map((line) => {
 
   @media (max-width: 720px) {
     .cover {
-      --mast: 25vw;
+      --mast: 41vw;
       --hero-w: 56vw;
       --bd-w: 44vw;
-      --hero-top: calc(18px + var(--mast) * 0.66);
+      --hero-top: calc(14px + var(--mast) * 0.7);
       height: auto;
       display: flex;
       flex-direction: column;
@@ -319,7 +343,7 @@ const coverLines = lines.map((line) => {
       height: calc(var(--hero-top) + var(--hero-w) * 1.12 + 24px);
     }
     .mast {
-      top: 14px;
+      top: 10px;
     }
     .bd1 {
       left: 3vw;

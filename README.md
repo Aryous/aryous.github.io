@@ -61,6 +61,7 @@ order: 1                          # 精选排序
 - 主角：`onCover: true` 的项目里日期最新的一个。
 - 导读三条：精选项目和文章混排，按日期取最新三条。
 - 期号：2026 年第 4 季度是 Issue 01，之后每季度加一；每月 1 日自动重建一次，不推送也会更新。
+- 注意：GitHub 会在公开仓库 60 天没有提交后自动停用定时任务。如果很久没更新，期号会停住；到 Actions 页面重新启用 "Deploy to GitHub Pages"，或者随便推送一次即可。
 
 ## 命令
 
@@ -70,7 +71,7 @@ order: 1                          # 精选排序
 | `npm test` | 单元测试（内容规则、封面、期号） |
 | `npm run build` | 测试 + 类型检查 + 构建 + 产物检查（CI 跑的就是它） |
 | `npm run preview` | 预览构建产物 |
-| `npm run shots` | 截图矩阵：所有页面 × 浅/深色 × 桌面/手机（需先 `npm run preview`） |
+| `npm run shots` | 截图矩阵：所有页面 × 浅/深色 × 桌面/手机（先在另一个终端运行 `npm run preview`，默认 <http://localhost:4321>） |
 
 构建会在这些情况下失败、不发布：同一篇的两个语言版本都写了 `date` 或都没写；文件名不是 `zh.md`/`en.md`；封面项目缺 `object`；站内链接或图片失效；引用了 Google Fonts。
 

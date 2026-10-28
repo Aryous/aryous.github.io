@@ -29,6 +29,16 @@ describe('pickCover', () => {
     const items = buildItems([p('a', { date: new Date(), onCover: true })], 'projects');
     expect(() => pickCover(items, [])).toThrow(/object/);
   });
+  it('throws when an older onCover project has no object image', () => {
+    const items = buildItems(
+      [
+        p('hero', { date: new Date('2026-10-01'), onCover: true, object: 'o' }),
+        p('older', { date: new Date('2026-01-01'), onCover: true }),
+      ],
+      'projects',
+    );
+    expect(() => pickCover(items, [])).toThrow(/projects\/older/);
+  });
   it('backdrops: other featured projects with a cover, max 2, in featured order', () => {
     expect(pickCover(projects(), []).backdrops.map((i) => i.slug)).toEqual(['b', 'old-hero']);
   });

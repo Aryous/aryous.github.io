@@ -10,7 +10,7 @@ export async function writingFeed(context: APIContext, locale: Locale) {
   return rss({
     title: locale === 'zh' ? 'Aryous · 文字' : 'Aryous · Writing',
     description: t(locale).siteDescription,
-    site: context.site ?? 'https://aryous.github.io',
+    site: new URL(locale === 'en' ? '/en/' : '/', context.site ?? 'https://aryous.github.io').href,
     trailingSlash: true,
     customData: `<language>${HTML_LANG[locale].toLowerCase()}</language>`,
     items: items.map((item) => {

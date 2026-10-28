@@ -1,5 +1,5 @@
 // Screenshot matrix: pages × themes × viewports (+ a reduced-motion pass).
-// Usage: node scripts/screenshots.mjs [--base http://127.0.0.1:4329] [--only /,/en/] [--themes light,dark] [--sizes desktop,mobile]
+// Usage: node scripts/screenshots.mjs [--base http://localhost:4321] [--only /,/en/] [--themes light,dark] [--sizes desktop,mobile]
 import puppeteer from 'puppeteer-core';
 import { mkdirSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -8,7 +8,7 @@ const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
   return i > -1 ? process.argv[i + 1] : fallback;
 };
-const base = arg('base', 'http://127.0.0.1:4329');
+const base = arg('base', 'http://localhost:4321');
 const CHROME = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const SIZES = { desktop: { width: 1440, height: 900 }, mobile: { width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 } };
 
